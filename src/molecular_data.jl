@@ -24,8 +24,8 @@ end
 """
     Geometry{CoordT}
 
-Represents the geometry of a molecule, a `Vector` of `Atom{CoordT}`s,
-each of which represents an atomic species and its position.
+Represents the geometry of a molecule, a `Vector` of `Atom{CoordT}`s, each of
+which represents an atomic species and its position.
 """
 struct Geometry{CoordT}
     atoms::Vector{Atom{CoordT}}
@@ -37,6 +37,13 @@ end
 Create an empty `Geometry` object with `Float64` coordinates.
 """
 Geometry() = Geometry{Atom{Float64}}(Vector{Atom{Float64}}[])
+
+"""
+    Geometry(atoms::Atom...)
+
+Initialize a `Geometry` object with `atoms`.
+"""
+Geometry(atoms::Atom...) = Geometry([atoms...])
 
 for f in (:push!, :length, :getindex, :iterate)
     @eval Base.$f(g::Geometry, args...) = $f(g.atoms, args...)
@@ -56,4 +63,12 @@ Base.@kwdef struct MolecularData{CoordT}
     multiplicity::Int = 1
     charge::Int = 0
     basis::String = "sto-3g"
+end
+
+function Base.getproperty(mol::MolecularData, sym::Symbol)
+    if sym == :spin
+        return mol.multiplicity - 1  # from OpenFermion
+    else
+        return getfield(mol, sym)
+    end
 end

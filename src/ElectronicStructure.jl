@@ -1,3 +1,9 @@
+"""
+    module ElectronicStructure
+
+Provides an interface to electronic structure calculation packages.  The only
+package supported is `pyscf`.
+"""
 module ElectronicStructure
 
 import PeriodicTable
@@ -13,6 +19,5 @@ end
 
 
 include("molecular_data.jl")
-#include("pyscf.jl")
 
 end # module ElectronicStructure
