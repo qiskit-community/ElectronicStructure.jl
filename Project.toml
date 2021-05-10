@@ -5,6 +5,8 @@ version = "0.1.0"
 
 [deps]
 PeriodicTable = "7b2266bf-644c-5ea3-82d8-af4bbd25a884"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
