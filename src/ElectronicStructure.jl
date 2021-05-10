@@ -1,5 +1,9 @@
 module ElectronicStructure
 
-# Write your package code here.
+import PeriodicTable
 
-end
+export Atom, Geometry, MolecularData
+
+include("molecular_data.jl")
+
+end # module ElectronicStructure
