@@ -126,3 +126,13 @@ end
 
 ## See OpenFermion molecular_data.py
 ## get_molecular_hamiltonian for how to convert these integrals to InteractionOperator
+
+function molecular_data_pyscf(mol_spec::MolecularSpec)
+    pymol = PyMol(mol_spec)  # Convert MolecularSpec to pyscf equiv.
+    scf = PySCF(pymol)       # Create scf calc object.
+    hartree_fock!(scf)       # Run basic, neccesary calcs.
+    one_e_ints = one_electron_integrals(scf)  # Compute one and two body integrals
+    two_e_ints = two_elecron_integrals(pymol, scf)
+    nuclear_repulsion = pymol.pymol.energy_nuc() # Compute constant energy
+    return MolecularData(mol_spec, nuclear_repulsion, one_e_ints, two_e_ints)
+end

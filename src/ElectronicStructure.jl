@@ -14,7 +14,7 @@ import PeriodicTable
 import Requires
 import ZChop
 
-export Atom, Geometry, MolecularSpec
+export Atom, Geometry, MolecularSpec, InteractionOperator, InteractionOperator!
 
 function __init__()
     Requires.@require PyCall="438e738f-606a-5dbb-bf0a-cddfbfd45ab0" begin
@@ -24,5 +24,6 @@ end
 
 include("molecular_spec.jl")
 include("molecular_data.jl")
+include("interaction_operator.jl")
 
 end # module ElectronicStructure
