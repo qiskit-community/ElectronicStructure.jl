@@ -28,6 +28,8 @@ struct InteractionOperator
     two_body_tensor::Array{Float64, 4}
 end
 
+## NOTE !!!! Conversion of InteractionOperator to FermionOperator is in OF conversions.py
+## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 function InteractionOperator(mol_data::MolecularData)
     tens1, tens2 = spin_orbital_from_spatial(mol_data.one_body_integrals, mol_data.two_body_integrals)
     return InteractionOperator(mol_data.nuclear_repulsion, tens1, tens2)
