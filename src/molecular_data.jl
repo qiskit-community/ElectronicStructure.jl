@@ -1,74 +1,20 @@
 ####
-#### Atom
+#### Transformations to our representations
 ####
 
-"""
-    Atom{T}
+function spin_orbital_from_spatial(one_body_integrals, two_body_integrals)
+    n_qubits = 2 * size(one_body_integrals)[1]
+    r1 = 1:2:n_qubits # odd indices
+    r2 = 2:2:n_qubits # even indices
 
-Represents a single atom and it's spatial position of type `CoordT`.
-"""
-struct Atom{CoordT}
-    species::Symbol
-    coords::NTuple{3, CoordT}
+    one_body_coefficients = similar(one_body_integrals, (n_qubits, n_qubits))
+    one_body_coefficients[r1, r1] .= one_body_integrals
+    one_body_coefficients[r2, r2] .= one_body_integrals
 
-    function Atom(species::Symbol, coords::NTuple{3, T}) where T
-        haskey(PeriodicTable.elements, species) || throw(ErrorException("No element \"$species\" exists."))
-        return new{T}(species, coords)
+    two_body_coefficients = similar(two_body_integrals, (n_qubits, n_qubits, n_qubits, n_qubits))
+    for inds in ((r1, r2, r2, r1), (r2, r1, r1, r2), (r1, r1, r1, r1), (r2, r2, r2, r2))
+        two_body_coefficients[inds...] .= two_body_integrals
     end
-end
 
-####
-#### Geometry
-####
-
-"""
-    Geometry{CoordT}
-
-Represents the geometry of a molecule, a `Vector` of `Atom{CoordT}`s, each of
-which represents an atomic species and its position.
-"""
-struct Geometry{CoordT}
-    atoms::Vector{Atom{CoordT}}
-end
-
-"""
-    Geometry()
-
-Create an empty `Geometry` object with `Float64` coordinates.
-"""
-Geometry() = Geometry{Atom{Float64}}(Vector{Atom{Float64}}[])
-
-"""
-    Geometry(atoms::Atom...)
-
-Initialize a `Geometry` object with `atoms`.
-"""
-Geometry(atoms::Atom...) = Geometry([atoms...])
-
-for f in (:push!, :length, :getindex, :iterate)
-    @eval Base.$f(g::Geometry, args...) = $f(g.atoms, args...)
-end
-
-####
-#### Geometry
-####
-
-"""
-    struct MolecularData{CoordT}
-
-Contains data specifying an electronic structure problem.
-"""
-Base.@kwdef struct MolecularData{CoordT}
-    geometry::Geometry{CoordT}
-    multiplicity::Int = 1
-    charge::Int = 0
-    basis::String = "sto-3g"
-end
-
-function Base.getproperty(mol::MolecularData, sym::Symbol)
-    if sym == :spin
-        return mol.multiplicity - 1  # from OpenFermion
-    else
-        return getfield(mol, sym)
-    end
+    return ZChop.zchop!.((one_body_coefficients, two_body_coefficients))
 end
