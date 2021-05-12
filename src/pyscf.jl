@@ -127,7 +127,7 @@ end
 ## See OpenFermion molecular_data.py
 ## get_molecular_hamiltonian for how to convert these integrals to InteractionOperator
 
-function molecular_data_pyscf(mol_spec::MolecularSpec)
+function MolecularData(::Type{PySCF} ,mol_spec::MolecularSpec)
     pymol = PyMol(mol_spec)  # Convert MolecularSpec to pyscf equiv.
     scf = PySCF(pymol)       # Create scf calc object.
     hartree_fock!(scf)       # Run basic, neccesary calcs.
