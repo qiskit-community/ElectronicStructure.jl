@@ -92,7 +92,7 @@ end
     hartree_fock!(scf::PySCF)
 
 Perform Hartee-Fock calculation using the `scf` calculational object.  This method must be
-called one `scf` before any other calculations, such as integrals may be performed.
+called on `scf` before any other calculations, such as integrals may be performed.
 """
 function hartree_fock!(scf::PySCF)
     verbose = scf.scf.verbose
