@@ -5,7 +5,7 @@
 """
     Atom{T}
 
-Represents a single atom and it's spatial position of type `CoordT`.
+Represents a single atom and its spatial position of type `CoordT`.
 """
 struct Atom{CoordT}
     species::Symbol
