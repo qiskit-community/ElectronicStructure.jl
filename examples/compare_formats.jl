@@ -1,5 +1,7 @@
 using ElectronicStructure
 
+using PyCall
+
 using ElectronicStructure: one_electron_integrals, two_elecron_integrals,
    MolecularData, PySCF
 
@@ -40,16 +42,12 @@ function get_pyscf_molecule(geom, basis)
     return mol_pyscf
 end
 
-mol_pyscf = get_pyscf_molecule(geom, basis);
-
 function get_openfermion_molecule(geom, basis)
     multiplicity = 1
     mol_openfermion = openfermion.chem.MolecularData(to_openfermion(geom), basis, multiplicity)
     mol_openfermion = openfermionpyscf.run_pyscf(mol_openfermion)
     return mol_openfermion
 end
-
-mol_openfermion = get_openfermion_molecule(geom, basis);
 
 function get_qiskit_nature_molecule(geom, basis)
     driver = drivers.PySCFDriver(atom=to_pyscf(geom),
@@ -61,4 +59,20 @@ function get_qiskit_nature_molecule(geom, basis)
     return mol_nature
 end
 
+mol_pyscf = get_pyscf_molecule(geom, basis);
+mol_openfermion = get_openfermion_molecule(geom, basis);
 mol_nature = get_qiskit_nature_molecule(geom, basis);
+
+function compare_calculations()
+    tst = mol_nature.mo_onee_ints ≈ mol_openfermion.one_body_integrals
+    println(tst, ": (raw) nature and openfermion one body integrals are equal")
+
+    tst = mol_openfermion.one_body_integrals ≈ mol_pyscf.one_body_integrals
+    println(tst, ": openfermion and pyscf one body integrals are equal")
+
+    tst = mol_nature.mo_eri_ints ≈ mol_pyscf.two_body_integrals
+    println(tst, ": (raw) nature and pyscf two body integrals are equal")
+
+    tst = mol_openfermion.two_body_integrals ≈ phys_to_chem(mol_pyscf.two_body_integrals)
+    println(tst, ": openfermion and phys_to_chem(pyscf) two body integrals are equal")
+end
