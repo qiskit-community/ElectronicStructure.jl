@@ -1,3 +1,9 @@
+"""
+    struct MolecularData{T}
+
+Structure describing molecular Hamiltonian. This stores the specification
+of the problem and the resulting integrals and nuclear repulsion energy.
+"""
 struct MolecularData{T}
     spec::MolecularSpec
     nuclear_repulsion::Float64

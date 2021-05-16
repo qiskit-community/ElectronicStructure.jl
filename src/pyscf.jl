@@ -111,12 +111,24 @@ end
 ## Both OpenFermion and qiskit.nature do mo_coeff' * hcore * mo_coeff.
 ## OpenFermion reshapes this into one_electron, but it really looks like a no-op to me.
 ## Wait,... In _pyscf_molecular_data.py, they seem to agree with me.
+"""
+    one_electron_integrals(scf::PySCF)
+
+Compute one-electron MO integrals. This uses pyscf to get AO integrals
+and transforms them to MO integrals.
+"""
 function one_electron_integrals(scf::PySCF)
     mo_coeff = scf.scf.mo_coeff
     hcore = scf.scf.get_hcore()
     return mo_coeff' * hcore * mo_coeff
 end
 
+"""
+    two_elecron_integrals(pymol::PyMol, scf::PySCF)
+
+Compute two-electron MO integrals. This uses pyscf to get AO integrals
+and transforms them to MO integrals.
+"""
 function two_elecron_integrals(pymol::PyMol, scf::PySCF)
     two_elecron_compressed = pyscf.ao2mo.kernel(pymol.pymol, scf.scf.mo_coeff)
     n_orbitals = size(scf.scf.mo_coeff)[2]
@@ -127,6 +139,12 @@ end
 ## See OpenFermion molecular_data.py
 ## get_molecular_hamiltonian for how to convert these integrals to InteractionOperator
 
+"""
+    MolecularData(::Type{PySCF}, mol_spec::MolecularSpec)
+
+Compute coefficient integrals and energies for molecular Hamiltonian from
+specification of problem `mol_spec` using `PySCF`.
+"""
 function MolecularData(::Type{PySCF}, mol_spec::MolecularSpec)
     pymol = PyMol(mol_spec)  # Convert MolecularSpec to pyscf equiv.
     scf = PySCF(pymol)       # Create scf calc object.

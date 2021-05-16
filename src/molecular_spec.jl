@@ -6,6 +6,12 @@
     Atom{T}
 
 Represents a single atom and its spatial position of type `CoordT`.
+
+# Examples
+```jldoctest
+julia> Atom(:Li, (0.0, 0.0, 1.4))
+Atom{Float64}(:Li, (0.0, 0.0, 1.4))
+```
 """
 struct Atom{CoordT}
     species::Symbol
@@ -25,7 +31,8 @@ end
     Geometry{CoordT}
 
 Represents the geometry of a molecule, a `Vector` of `Atom{CoordT}`s, each of
-which represents an atomic species and its position.
+which represents an atomic species and its position. `CoordT` is the type of the
+coordinates.
 """
 struct Geometry{CoordT}
     atoms::Vector{Atom{CoordT}}
@@ -35,13 +42,25 @@ end
     Geometry()
 
 Create an empty `Geometry` object with `Float64` coordinates.
+
+# Examples
+```jldoctest
+julia> Geometry()
+Geometry{Float64}(Atom{Float64}[])
+```
 """
-Geometry() = Geometry{Atom{Float64}}(Vector{Atom{Float64}}[])
+Geometry() = Geometry(Atom{Float64}[])
 
 """
     Geometry(atoms::Atom...)
 
 Initialize a `Geometry` object with `atoms`.
+
+# Examples
+```jldoctest
+julia> Geometry(Atom(:H, (0., 0., 0.)), Atom(:H, (0., 0., 0.7414)))
+Geometry{Float64}(Atom{Float64}[Atom{Float64}(:H, (0.0, 0.0, 0.0)), Atom{Float64}(:H, (0.0, 0.0, 0.7414))])
+```
 """
 Geometry(atoms::Atom...) = Geometry([atoms...])
 
@@ -56,10 +75,29 @@ end
 """
     struct MolecularSpec{CoordT}
 
-Contains data specifying an electronic structure problem.
+Contains data specifying an electronic structure problem. The results of electronic
+structure calculations, for example, integrals are *not* stored here. They are stored
+in the [`MolecularData`](@ref) type.
+
+# Keywords:
+- `geometry::Geometry`
+-  `multiplicity::Int = 1`
+-  `charge::Int = 0`
+-  `basis::String = "sto-3g"`
+
+# Additional properties
+-  `spin`
+
+# Examples
+```jldoctest
+julia> geometry = Geometry(Atom(:H, (0., 0., 0.)), Atom(:H, (0., 0., 0.7414)));
+
+julia> MolecularSpec(geometry=geometry)
+MolecularSpec{Float64}(Geometry{Float64}(Atom{Float64}[Atom{Float64}(:H, (0.0, 0.0, 0.0)), Atom{Float64}(:H, (0.0, 0.0, 0.7414))]), 1, 0, "sto-3g")
+```
 """
 Base.@kwdef struct MolecularSpec{CoordT}
-    geometry::Geometry{CoordT}
+    geometry::Geometry{CoordT}  #  Should we use just `Vector{Atom{CoordT}}` ?
     multiplicity::Int = 1
     charge::Int = 0
     basis::String = "sto-3g"

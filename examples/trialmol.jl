@@ -32,6 +32,6 @@ mol_data = MolecularData(PySCF, mol_spec)
 ## This does just a bit of manipulation of mol_data; converting space orbitals
 ## into space-and-spin orbitals.
 ## This is the same as the operator by the same name in OpenFermion.
-iop = InteractionOperator(mol_data)
+iop = InteractionOperator(mol_data; block_spin=false, to_chem=false)
 
 nothing
