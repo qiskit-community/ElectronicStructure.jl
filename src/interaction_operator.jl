@@ -59,19 +59,23 @@ end
 ## NOTE !!!! Conversion of InteractionOperator to FermionOperator is in OF conversions.py
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 """
-    InteractionOperator(mol_data::MolecularData; block_spin=false, to_chem=false)
+    InteractionOperator(mol_data::MolecularData; block_spin=false, transform=nothing)
 
 Create an InteractionOperator from `mol_data`.
+
+`mol_data` contains integrals for spatial orbitals. `InteractionOrbitals` creates coefficients for
+spin orbitals, doubling the number of orbitals.
 
 If `block_spin` is `true` the spins are in two sectors. Otherwise, the spin variable varies
 more rapidly than the spatial variable, i.e. the spins are interleaved. Note that Qiskit
 uses the former ordering and OpenFermion uses the latter.
 
-If `to_chem` is `true`, it is assumed that the integrals in `mol_data` are stored in
+If `transform` is `:chem`, it is assumed that the integrals in `mol_data` are stored in
 physicists' order and they are copied and converted to chemists' order before creating the
-output operator. If `to_chem` is `false`, to transformation is done.
+output operator. If `transform` is `:phys`, they are transformed from chemists' to physicists' order.
+If `transform` is `nothing`, no transformation is done.
 """
-function InteractionOperator(mol_data::MolecularData; block_spin=false, to_chem=false)
+function InteractionOperator(mol_data::MolecularData; block_spin=false, transform=nothing)
     ## I assume OpenFermion compatibility. Which is a) physicist's order and
     ## b) spin varies fastest. (block_spin=false)
     ## 'ikmj->ijkm' Order specified in fermionic_op_builder.py in Qiskit nature to go from physics to chemist.
@@ -79,8 +83,12 @@ function InteractionOperator(mol_data::MolecularData; block_spin=false, to_chem=
     ## But, below, I actually do the reverse transformtion, and this makes the results here
     ## agree with Qiskit nature.
     tb = mol_data.two_body_integrals
-    if to_chem
+    if transform == :chem
         tens_tmp = phys_to_chem(tb)
+    elseif transform == :phys
+        tens_tmp = chem_to_phys(tb)
+    elseif transform != nothing
+        throw(ArgumentError("`transform` must be one of `:chem`, `:phys` or `nothing`"))
     else
         tens_tmp = tb
     end

@@ -20,18 +20,18 @@ geoms = (
 )
 
 ## Choose one of the geometries
-geom = geoms[3]
+geom = geoms[1]
 
 ## Construct specification of electronic structure problem
 mol_spec = MolecularSpec(geometry=geom)
 
 ## Do calculations and populate MolecularData with results
-mol_data = MolecularData(PySCF, mol_spec)
+mol_pyscf = MolecularData(PySCF, mol_spec)
 
 ## Create interaction operator from one and two body integrals and constant.
 ## This does just a bit of manipulation of mol_data; converting space orbitals
 ## into space-and-spin orbitals.
 ## This is the same as the operator by the same name in OpenFermion.
-iop = InteractionOperator(mol_data; block_spin=false, to_chem=false)
+iop = InteractionOperator(mol_pyscf; block_spin=true, transform=nothing)
 
 nothing

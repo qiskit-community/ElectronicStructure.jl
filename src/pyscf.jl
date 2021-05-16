@@ -17,6 +17,12 @@ end
     to_pyscf(atom::Atom)
 
 Convert `atom` to pyscf geometry string for a single atom (or component).
+
+# Examples
+```jldoctest
+julia> to_pyscf(Atom(:Li, (0.0, 0.0, 1.4)))
+"Li 0.0 0.0 1.4"
+```
 """
 to_pyscf(atom::Atom) = string(atom.species, " ", join(string.(atom.coords), " "))
 
@@ -25,6 +31,12 @@ to_pyscf(atom::Atom) = string(atom.species, " ", join(string.(atom.coords), " ")
 
 Convert `geom` to pyscf geometry string, a semi-colon separated list of specifications of
 species and their positions.
+
+# Examples
+```jldoctest
+julia> to_pyscf(Geometry(Atom(:H, (0., 0., 0.)), Atom(:H, (0., 0., 0.7414))))
+"H 0.0 0.0 0.0;H 0.0 0.0 0.7414"
+```
 """
 to_pyscf(geom::Geometry) = join((to_pyscf(atom) for atom in geom), ";")
 
