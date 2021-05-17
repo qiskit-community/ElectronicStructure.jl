@@ -8,13 +8,12 @@
 """
     spin_orbital_from_spatial(one_body_integrals, two_body_integrals; block_spin=false)
 
-Create coefficients for spin-orbitals from coefficients for spatial orbitals only. The spin
-varies most rapidly, so that orbitals corresponding to the same spatial oribtal, but with
-differing spins are adjacent.
+Create coefficients for spin-orbitals from coefficients for spatial orbitals only.
 
 If `block_spin` is `true` the spins are in two sectors. Otherwise, the spin variable varies
-more rapidly than the spatial variable, i.e. the spins are interleaved. Note that Qiskit
-uses the former ordering and OpenFermion uses the latter.
+more rapidly than the spatial variable, i.e. the spins are interleaved; orbitals
+corresponding to the same spatial orbital, but with differing spins are adjacent.  Note that
+Qiskit uses the former ordering and OpenFermion uses the latter.
 """
 function spin_orbital_from_spatial(one_body_integrals, two_body_integrals; block_spin=false)
     spatial_dim = size(one_body_integrals)[1]
