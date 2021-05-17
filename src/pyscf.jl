@@ -74,9 +74,9 @@ end
 """
     PyMol(md::MolecularSpec)
 
-Create an instance of Python class `pyscf.gto.Mole` and wrap in `PyMol`.  This essentially
-converts the `ElectronicStructure`-native `MolecularSpec` type to the corresponding `pyscf`
-type.
+Create an instance of Python class `pyscf.gto.Mole` and wrap in `PyMol`. This
+first converts the `ElectronicStructure`-native `MolecularSpec` type to the corresponding `pyscf`
+type, then wraps the resulting Python object in `PyMol`.
 """
 PyMol(md::MolecularSpec) = PyMol(to_pyscf(md))
 
@@ -104,7 +104,7 @@ end
     hartree_fock!(scf::PySCF)
 
 Perform Hartee-Fock calculation using the `scf` calculational object.  This method must be
-called on `scf` before any other calculations, such as integrals may be performed.
+called on `scf` before any other calculations, such as integrals, may be performed.
 """
 function hartree_fock!(scf::PySCF)
     verbose = scf.scf.verbose
@@ -139,7 +139,8 @@ end
     two_elecron_integrals(pymol::PyMol, scf::PySCF)
 
 Compute two-electron MO integrals. This uses pyscf to get AO integrals
-and transforms them to MO integrals.
+and transforms them to MO integrals. The integrals are indexed in chemists'
+order.
 """
 function two_elecron_integrals(pymol::PyMol, scf::PySCF)
     two_elecron_compressed = pyscf.ao2mo.kernel(pymol.pymol, scf.scf.mo_coeff)
@@ -154,8 +155,9 @@ end
 """
     MolecularData(::Type{PySCF}, mol_spec::MolecularSpec)
 
-Compute coefficient integrals and energies for molecular Hamiltonian from
-specification of problem `mol_spec` using `PySCF`.
+Compute coefficient integrals and energies for molecular Hamiltonian from specification of
+problem `mol_spec` using `PySCF`.
+The two-body integrals are indexed in chemists' order.
 """
 function MolecularData(::Type{PySCF}, mol_spec::MolecularSpec)
     pymol = PyMol(mol_spec)  # Convert MolecularSpec to pyscf equiv.
