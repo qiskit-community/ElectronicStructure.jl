@@ -135,18 +135,19 @@ function one_electron_integrals(scf::PySCF)
     return mo_coeff' * hcore * mo_coeff
 end
 
+## This is copied from OpenFermion
 """
-    two_elecron_integrals(pymol::PyMol, scf::PySCF)
+    two_electron_integrals(pymol::PyMol, scf::PySCF)
 
 Compute two-electron MO integrals. This uses pyscf to get AO integrals
 and transforms them to MO integrals. The integrals are indexed in chemists'
 order.
 """
-function two_elecron_integrals(pymol::PyMol, scf::PySCF)
-    two_elecron_compressed = pyscf.ao2mo.kernel(pymol.pymol, scf.scf.mo_coeff)
+function two_electron_integrals(pymol::PyMol, scf::PySCF)
+    two_electron_compressed = pyscf.ao2mo.kernel(pymol.pymol, scf.scf.mo_coeff)
     n_orbitals = size(scf.scf.mo_coeff)[2]
     symmetry_code = 1 # No permutation symmetry
-    return pyscf.ao2mo.restore(symmetry_code, two_elecron_compressed, n_orbitals)
+    return pyscf.ao2mo.restore(symmetry_code, two_electron_compressed, n_orbitals)
 end
 
 ## See OpenFermion molecular_data.py
@@ -164,7 +165,7 @@ function MolecularData(::Type{PySCF}, mol_spec::MolecularSpec)
     scf = PySCF(pymol)       # Create scf calc object.
     hartree_fock!(scf)       # Run basic, neccesary calcs.
     one_e_ints = one_electron_integrals(scf)  # Compute one and two body integrals
-    two_e_ints = two_elecron_integrals(pymol, scf)
+    two_e_ints = two_electron_integrals(pymol, scf)
     nuclear_repulsion = pymol.pymol.energy_nuc() # Compute constant energy
     return MolecularData(mol_spec, nuclear_repulsion, one_e_ints, two_e_ints)
 end

@@ -17,7 +17,7 @@ using Tullio: @tullio
 
 export Atom, Geometry, MolecularSpec, InteractionOperator, InteractionOperator!
 export non_zero_elements, non_zero_elements_python, phys_to_chem, chem_to_phys,
-    check_two_body_symmetries, test_two_body_symmetries
+    check_two_body_symmetries, find_two_body_symmetries
 export to_openfermion
 
 function __init__()

@@ -2,7 +2,7 @@ using ElectronicStructure
 
 using PyCall
 
-using ElectronicStructure: one_electron_integrals, two_elecron_integrals,
+using ElectronicStructure: one_electron_integrals,
    MolecularData, PySCF
 
 @pyimport qiskit_nature.drivers as drivers
@@ -23,7 +23,7 @@ geoms = (
 )
 
 ## Choose one of the geometries
-geom = geoms[1]
+geom = geoms[3]
 basis = "sto-3g"
 
 """
@@ -112,7 +112,7 @@ function compare_calculations()
     tst = check_two_body_symmetries(molham_openfermion.two_body_tensor; chemist=false)
     tstpr(tst, "openfermion mol. ham. two-body tensor has physicists' symmetry.")
 
-    iop = InteractionOperator(mol_pyscf; block_spin=false, transform=:phys)
+    iop = InteractionOperator(mol_pyscf; block_spin=false, transform=:tophys)
     tst = (molham_openfermion.two_body_tensor ≈ iop.two_body_tensor)
     tstpr(tst, "InteractionOperator from molecular data in OpenFermion and ElectronicStructure agree.")
 

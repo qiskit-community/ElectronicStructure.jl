@@ -1,3 +1,5 @@
+using FastBroadcast
+
 ####
 #### Transformations to our representations
 ####
@@ -32,14 +34,14 @@ function _spin_orbital_from_spatial(one_body_integrals, two_body_integrals, r1, 
     new_dim = 2 * size(one_body_integrals)[1]
 
     one_body_coefficients = zeros(eltype(one_body_integrals), (new_dim, new_dim))
-    @inbounds one_body_coefficients[r1, r1] .= one_body_integrals
-    @inbounds one_body_coefficients[r2, r2] .= one_body_integrals
+    @.. one_body_coefficients[r1, r1] = one_body_integrals
+    @.. one_body_coefficients[r2, r2] = one_body_integrals
 
     two_body_coefficients = zeros(eltype(two_body_integrals), ntuple(i->new_dim, 4))
     @inbounds for inds in ((r1, r2, r2, r1), (r2, r1, r1, r2), (r1, r1, r1, r1), (r2, r2, r2, r2))
-        two_body_coefficients[inds...] .= two_body_integrals
+       @.. two_body_coefficients[inds...] = two_body_integrals
     end
-    two_body_coefficients .= two_body_coefficients ./ 2
+    @.. two_body_coefficients = two_body_coefficients / 2
 
     return ZChop.zchop!.((one_body_coefficients, two_body_coefficients))
 end
@@ -58,7 +60,7 @@ end
 ## NOTE !!!! Conversion of InteractionOperator to FermionOperator is in OF conversions.py
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 """
-    InteractionOperator(mol_data::MolecularData; block_spin=false, transform=:phys)
+    InteractionOperator(mol_data::MolecularData; block_spin=false, transform=:tophys)
 
 Create an InteractionOperator from `mol_data`.
 
@@ -66,30 +68,24 @@ Create an InteractionOperator from `mol_data`.
 spin orbitals, doubling the number of orbitals.
 
 If `block_spin` is `true` the spins are in two sectors. Otherwise, the spin variable varies
-more rapidly than the spatial variable, i.e. the spins are interleaved. Note that Qiskit
-uses the former ordering and OpenFermion uses the latter.
+more rapidly than the spatial variable, i.e. adjacent orbitals have differing spins. Note
+that Qiskit uses the former ordering and OpenFermion uses the latter.
 
-If `transform` is `:chem`, it is assumed that the integrals in `mol_data` are stored in
-physicists' order and they are copied and converted to chemists' order before creating the
-output operator. If `transform` is `:phys`, they are transformed from chemists' to physicists' order.
+If `transform` is `:tophys`, it is assumed that the integrals in `mol_data` are stored in
+chemists' order, and they are copied and converted to physicists' order before creating the
+output operator. If `transform` is `:tochem`, they are transformed from physicists' to chemists' order.
 If `transform` is `nothing`, no transformation is done.
 
 The default values of `block_spin` and `transform` agree with the `InteractionOperator` from OpenFermion.
 """
-function InteractionOperator(mol_data::MolecularData; block_spin=false, transform=:phys)
-    ## I assume OpenFermion compatibility. Which is a) physicist's order and
-    ## b) spin varies fastest. (block_spin=false)
-    ## 'ikmj->ijkm' Order specified in fermionic_op_builder.py in Qiskit nature to go from physics to chemist.
-    ## And to me this indeed looks like physicists to chemists order transformation.
-    ## But, below, I actually do the reverse transformtion, and this makes the results here
-    ## agree with Qiskit nature.
+function InteractionOperator(mol_data::MolecularData; block_spin=false, transform=:tophys)
     tb = mol_data.two_body_integrals
-    if transform == :chem
+    if transform == :tochem
         tens_tmp = phys_to_chem(tb)
-    elseif transform == :phys
+    elseif transform == :tophys
         tens_tmp = chem_to_phys(tb)
     elseif transform != nothing
-        throw(ArgumentError("`transform` must be one of `:chem`, `:phys` or `nothing`"))
+        throw(ArgumentError("`transform` must be one of `:tochem`, `:tophys` or `nothing`"))
     else
         tens_tmp = tb
     end

@@ -4,7 +4,7 @@ using ElectronicStructure
 
 using PyCall
 
-using ElectronicStructure: one_electron_integrals, two_elecron_integrals,
+using ElectronicStructure: one_electron_integrals,
    MolecularData, PySCF
 
 ##  Define geometries: specification of atoms and their positions
@@ -20,7 +20,7 @@ geoms = (
 )
 
 ## Choose one of the geometries
-geom = geoms[1]
+geom = geoms[3]
 
 ## Construct specification of electronic structure problem
 mol_spec = MolecularSpec(geometry=geom)

@@ -6,13 +6,12 @@ is a tuple of indices and whose second element is the value of `t` at those indi
 """
 function non_zero_elements(t)
     ((ind, t[ind...]) for ind in Iterators.product(axes(t)...) if !iszero(t[ind...]))
-#   ((ind, t[reverse(ind)...]) for ind in Iterators.product(axes(t)...) if !iszero(t[reverse(ind)...]))
 end
 
 """
     non_zero_elements_python(t)
 
-Like `non_zero_elements`, but use Pythons order for product of iterators. Also use zero-based indexing in
+Like `non_zero_elements`, but use Python's order for product of iterators. Also use zero-based indexing in
 reported indices.
 """
 function non_zero_elements_python(t)
@@ -25,7 +24,7 @@ end
 Convert the rank-four tensor `two_body` representing two-body integrals from physicist
 index order to chemist index order: i,j,k,l -> i,l,j,k
 
-See `chem_to_phys`, `test_two_body_symmetries`.
+See `chem_to_phys`, `check_two_body_symmetries`.
 """
 function phys_to_chem(two_body)
     @tullio two_body_out[i,l,j,k] := two_body[i,j,k,l]
@@ -38,7 +37,7 @@ end
 Convert the rank-four tensor `two_body` representing two-body integrals from chemist
 index order to physicist index order: i,j,k,l -> i,k,l,j
 
-See `phys_to_chem`, `test_two_body_symmetries`.
+See `phys_to_chem`, `check_two_body_symmetries`.
 
 # Note
 Denote `chem_to_phys` by `g` and `phys_to_chem` by `h`. The elements `g`, `h`, `I` form
@@ -53,9 +52,9 @@ function chem_to_phys(two_body)
 end
 
 """
-    check_two_body_symmetries(t; chemist=true)
+    check_two_body_symmetries(two_body_tensor; chemist=true)
 
-Return `true` if the rank-4 tensor `t` has the required symmetries for coefficents of the
+Return `true` if the rank-4 tensor `two_body_tensor` has the required symmetries for coefficents of the
 two-electron terms.  If `chemist` is `true`, assume the input is in chemists' order,
 otherwise in physicists' order.
 
@@ -71,13 +70,12 @@ function check_two_body_symmetries(two_body_tensor_in; chemist=true)
     two_body_tensor = ZChop.zchop(two_body_tensor_in)
     if ! chemist
         ## Safest is to use property that if a tensor satisfies phys ordered symmetries,
-        ## then it satisfies chem ordered symmetries under transformation
+        ## then it satisfies chem ordered symmetries after transformation
         two_body_tensor = phys_to_chem(two_body_tensor)
     end
-    tests = _chem_tests
-    t1 = similar(two_body_tensor)
-    for test! in tests
-        test!(t1, two_body_tensor)
+    t1 = similar(two_body_tensor) # `t1` will hold the transformed tensor
+    for test! in _chem_tests
+        test!(t1, two_body_tensor)  # write transformed tensor to `t1`
         if ! (t1 ≈ two_body_tensor)
             return false
         end
@@ -85,7 +83,45 @@ function check_two_body_symmetries(two_body_tensor_in; chemist=true)
     return true
 end
 
-## Tests for two-electron coefficient symmetries in chemists' order
+"""
+    find_two_body_symmetries(two_body_tensor)
+
+Return the index convention of `two_body_tensor`.
+
+The index convention is determined by checking symmetries of the tensor.
+If the indexing convention can be determined, then one of `:chemist`,
+`:physicist`, or `:intermediate` is returned. The `:intermediate` indexing
+may be obtained by applying `chem_to_phys` to the physicists' convention or
+`phys_to_chem` to the chemists' convention. If the tests for each of these
+conventions fail, then `:unknown` is returned.
+
+# Note
+The first of `:chemist`, `:physicist`, and `:intermediate`, in that order, to pass the tests
+is returned. If `two_body_tensor` has accidental symmetries, it may in fact satisfy more
+than one set of symmetry tests. For example, if all elements have the same value, then the
+symmetries for all three index orders are satisfied.
+"""
+function find_two_body_symmetries(two_body_tensor)
+    if check_two_body_symmetries(two_body_tensor)
+        return :chemist
+    else
+        transformed_tensor = phys_to_chem(two_body_tensor)
+        if check_two_body_symmetries(t)
+            return :physicist
+        end
+    end
+    transformed_tensor = phys_to_chem(transformed_tensor)
+    if check_two_body_symmetries(transformed_tensor)
+        return :intermediate
+    end
+    return :unknown
+end
+
+## Tests for two-electron coefficient symmetries in chemists' order.
+## These anonymous functions each take two arguments. `t` is the tensor
+## to be tested and `t1` is a tensor of the same shape that will be overwritten
+## with the transformed tensor. The calling code should then compare `t` and
+## `t1` for approximate equality.
 const _chem_tests = [
         ((t1, t) ->  @tullio t1[p, q, r, s] = t[q, p, r, s]),  # (1.4.38) in HJO book
         ((t1, t) ->  @tullio t1[p, q, r, s] = t[p, q, s, r]),  # (1.4.38)
