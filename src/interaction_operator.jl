@@ -2,7 +2,6 @@
 #### Transformations to our representations
 ####
 
-## !!!!!!!!!!!! THIS IS WRONG. probably need to write out the loops by hand
 ## Caution, we choose that this differs from OpenFermion by a factor of 1/2 in the two-body integral.
 ## In OpenFermion, they include the factor when constructing InteractionOperator.
 ## See spinorb_from_spatial in molecular_data.py.
@@ -60,7 +59,7 @@ end
 ## NOTE !!!! Conversion of InteractionOperator to FermionOperator is in OF conversions.py
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 """
-    InteractionOperator(mol_data::MolecularData; block_spin=false, transform=nothing)
+    InteractionOperator(mol_data::MolecularData; block_spin=false, transform=:phys)
 
 Create an InteractionOperator from `mol_data`.
 
@@ -75,8 +74,10 @@ If `transform` is `:chem`, it is assumed that the integrals in `mol_data` are st
 physicists' order and they are copied and converted to chemists' order before creating the
 output operator. If `transform` is `:phys`, they are transformed from chemists' to physicists' order.
 If `transform` is `nothing`, no transformation is done.
+
+The default values of `block_spin` and `transform` agree with the `InteractionOperator` from OpenFermion.
 """
-function InteractionOperator(mol_data::MolecularData; block_spin=false, transform=nothing)
+function InteractionOperator(mol_data::MolecularData; block_spin=false, transform=:phys)
     ## I assume OpenFermion compatibility. Which is a) physicist's order and
     ## b) spin varies fastest. (block_spin=false)
     ## 'ikmj->ijkm' Order specified in fermionic_op_builder.py in Qiskit nature to go from physics to chemist.

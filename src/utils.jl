@@ -38,27 +38,32 @@ end
 Convert the rank-four tensor `two_body` representing two-body integrals from chemist
 index order to physicist index order: i,j,k,l -> i,k,l,j
 
+See `phys_to_chem`, `test_two_body_symmetries`.
+
+# Note
 Denote `chem_to_phys` by `g` and `phys_to_chem` by `h`. The elements `g`, `h`, `I` form
 a group with `gh = hg = I`, `g^2=h`, and `h^2=g`.
-
-See `phys_to_chem`, `test_two_body_symmetries`.
 """
 function chem_to_phys(two_body)
     @tullio two_body_out[i,k,l,j] := two_body[i,j,k,l]
+    ## Following is tranform used in qiskit_nature. It is the same as
+    ## above, because of symmetry.
+    #  @tullio two_body_out[l,j,i,k] := two_body[i,j,k,l]
     return two_body_out
 end
 
 """
     check_two_body_symmetries(t; chemist=true)
 
-Return `true` if the rank-4 tensor `t` has the required symmetries for coefficents of the two-electron terms.
-If `chemist` is `true`, assume the input is in chemists' order, otherwise in physicists' order.
+Return `true` if the rank-4 tensor `t` has the required symmetries for coefficents of the
+two-electron terms.  If `chemist` is `true`, assume the input is in chemists' order,
+otherwise in physicists' order.
 
-If `t` is a correct tensor of indices, it must pass the tests. If `t` is a correct tensor of indicies,
-but the flag `chemist` is incorrect, it must fail the tests. So this test may be used to discriminiate
-between the orderings.
+If `t` is a correct tensor of indices, with the correct index order, it must pass the
+tests. If `t` is a correct tensor of indicies, but the flag `chemist` is incorrect, it must
+fail the tests. So this test may be used to discriminiate between the orderings.
 
-References: HJO (1.4.17), (1.4.38)
+References: HJO Molecular Electronic-Structure Theory (1.4.17), (1.4.38)
 
 See `phys_to_chem`, `chem_to_phys`.
 """
@@ -93,6 +98,7 @@ const _chem_tests = [
 
 ## !!!!!!!!! WRONG probably, apparently.
 ## Tests for two-electron coefficient symmetries in physicists' order
+## These symmetries are taken from a comment in OpenFermion
 ## pqrs = rqps = psrq = srqp = qpsr = rspq = spqr = qrsp
 const _phys_tests = [
         ((t1, t) ->  @tullio t1[p, q, r, s] = t[r, q, p, s]),
