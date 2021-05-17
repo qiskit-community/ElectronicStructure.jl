@@ -63,16 +63,47 @@ mol_pyscf = get_pyscf_molecule(geom, basis);
 mol_openfermion = get_openfermion_molecule(geom, basis);
 mol_nature = get_qiskit_nature_molecule(geom, basis);
 
+function boolstr(x::Bool)
+    if x
+        return "true"
+    else
+        return "*** false"
+    end
+end
+
+tstpr(tst, msg) = println(boolstr(tst), ": ", msg)
+
 function compare_calculations()
     tst = mol_nature.mo_onee_ints ≈ mol_openfermion.one_body_integrals
-    println(tst, ": (raw) nature and openfermion one body integrals are equal")
+    tstpr(tst, "(raw) nature and openfermion one-body integrals are equal")
 
     tst = mol_openfermion.one_body_integrals ≈ mol_pyscf.one_body_integrals
-    println(tst, ": openfermion and pyscf one body integrals are equal")
+    tstpr(tst, "openfermion and pyscf one-body integrals are equal")
 
     tst = mol_nature.mo_eri_ints ≈ mol_pyscf.two_body_integrals
-    println(tst, ": (raw) nature and pyscf two body integrals are equal")
+    tstpr(tst, "(raw) nature and pyscf two-body integrals are equal")
 
-    tst = mol_openfermion.two_body_integrals ≈ phys_to_chem(mol_pyscf.two_body_integrals)
-    println(tst, ": openfermion and phys_to_chem(pyscf) two body integrals are equal")
+    tst = mol_openfermion.two_body_integrals ≈ chem_to_phys(mol_pyscf.two_body_integrals)
+    tstpr(tst, "openfermion and phys_to_chem(pyscf) two-body integrals are equal")
+
+    tst = phys_to_chem(mol_openfermion.two_body_integrals) ≈ mol_pyscf.two_body_integrals
+    tstpr(tst, "chem_to_phys(openfermion) and pyscf two-body integrals are equal")
+
+    tst = check_two_body_symmetries(mol_pyscf.two_body_integrals; chemist=true)
+    tstpr(tst, "pyscf two-body integrals have chemists symmetry")
+
+    tst = check_two_body_symmetries(chem_to_phys(mol_pyscf.two_body_integrals); chemist=false)
+    tstpr(tst, "pyscf two-body integrals have physicists' symmetry under `chem_to_phys`")
+
+    tst = check_two_body_symmetries(mol_nature.mo_eri_ints; chemist=true)
+    tstpr(tst, "nature (raw) two-body integrals have chemists symmetry")
+
+    tst = check_two_body_symmetries(chem_to_phys(mol_nature.mo_eri_ints); chemist=false)
+    tstpr(tst, "nature (raw) two-body integrals have physicists' symmetry under `chem_to_phys`")
+
+    tst = check_two_body_symmetries(mol_openfermion.two_body_integrals; chemist=false)
+    tstpr(tst, "openfermion two-body integrals have physicists' symmetry")
+
+    tst = check_two_body_symmetries(phys_to_chem(mol_openfermion.two_body_integrals); chemist=true)
+    tstpr(tst, "openfermion two-body integrals have chemists' symmetry under `phys_to_chem`")
 end
