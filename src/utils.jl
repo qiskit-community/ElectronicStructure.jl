@@ -45,25 +45,7 @@ See `phys_to_chem`, `test_two_body_symmetries`.
 """
 function chem_to_phys(two_body)
     @tullio two_body_out[i,k,l,j] := two_body[i,j,k,l]
-
-    ## Wrong, these are backwards, I think.
-#    @tullio two_body_out[i,l,j,k] := two_body[i,j,k,l]
-#    @tullio two_body_out[i,j,k,l] := two_body[i,k,l,j]  # Same as above
     return two_body_out
-end
-
-## Checking broken physicist symmetry functions
-function try_symmetries(two_body; chemist=true)
-    t1 = similar(two_body)
-    if chemist
-        tests = _chem_tests
-    else
-        tests = _phys_tests
-    end
-    for tst in tests
-        tst(t1, two_body)
-        println(t1 ≈ two_body)
-    end
 end
 
 """
@@ -121,3 +103,17 @@ const _phys_tests = [
         ((t1, t) ->  @tullio t1[p, q, r, s] = t[s, p, q, r]),
         ((t1, t) ->  @tullio t1[p, q, r, s] = t[q, r, s, p])
     ]
+
+## Checking broken physicist symmetry functions
+function try_symmetries(two_body; chemist=true)
+    t1 = similar(two_body)
+    if chemist
+        tests = _chem_tests
+    else
+        tests = _phys_tests
+    end
+    for tst in tests
+        tst(t1, two_body)
+        println(t1 ≈ two_body)
+    end
+end

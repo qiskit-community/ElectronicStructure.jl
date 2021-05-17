@@ -2,6 +2,7 @@
 #### Transformations to our representations
 ####
 
+## !!!!!!!!!!!! THIS IS WRONG. probably need to write out the loops by hand
 ## Caution, we choose that this differs from OpenFermion by a factor of 1/2 in the two-body integral.
 ## In OpenFermion, they include the factor when constructing InteractionOperator.
 ## See spinorb_from_spatial in molecular_data.py.

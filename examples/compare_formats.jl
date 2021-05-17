@@ -106,4 +106,15 @@ function compare_calculations()
 
     tst = check_two_body_symmetries(phys_to_chem(mol_openfermion.two_body_integrals); chemist=true)
     tstpr(tst, "openfermion two-body integrals have chemists' symmetry under `phys_to_chem`")
+
+    ## get spin orbitals, double the number of orbitals
+    molham_openfermion = mol_openfermion.get_molecular_hamiltonian()
+    tst = check_two_body_symmetries(molham_openfermion.two_body_tensor; chemist=false)
+    tstpr(tst, "openfermion mol. ham. two-body tensor has physicists' symmetry.")
+
+    ## This is buggy. Gives wrong tensorsa
+    # iop = InteractionOperator(mol_pyscf; block_spin=true, transform=nothing)
+
+    tst = check_two_body_symmetries(mol_nature.two_body_integrals; chemist=false)
+    tstpr(tst, "qiskit_nature spin orb two_body_tensor has PHYSICISTs symmetry.")
 end
