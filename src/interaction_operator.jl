@@ -1,4 +1,4 @@
-using FastBroadcast
+using FastBroadcast: @..
 
 ####
 #### Transformations to our representations
@@ -17,29 +17,41 @@ more rapidly than the spatial variable, i.e. the spins are interleaved; orbitals
 corresponding to the same spatial orbital, but with differing spins are adjacent.  Note that
 Qiskit uses the former ordering and OpenFermion uses the latter.
 """
-function spin_orbital_from_spatial(one_body_integrals, two_body_integrals; block_spin=false)
+function spin_orbital_from_spatial(one_body_integrals, two_body_integrals; block_spin=false, index_order=:physicist)
     spatial_dim = size(one_body_integrals)[1]
     spin_orb_dim = 2 * spatial_dim
     if block_spin
-        r1 = 1:spatial_dim
-        r2 = (spatial_dim+1):spin_orb_dim
-    else # interleaved spin order
+        r1 = 1:spatial_dim  # first block of orbitals
+        r2 = (spatial_dim+1):spin_orb_dim  # second block of orbitals
+    else  # interleaved spin order
         r1 = 1:2:spin_orb_dim # odd indices
         r2 = 2:2:spin_orb_dim # even indices
     end
-    return _spin_orbital_from_spatial(one_body_integrals, two_body_integrals, r1, r2)
+    return _spin_orbital_from_spatial(one_body_integrals, two_body_integrals, r1, r2, index_order)
 end
 
-function _spin_orbital_from_spatial(one_body_integrals, two_body_integrals, r1, r2)
+## Create spin-orbital coefficients from spatial-orbital coeffcients. r1 and r2 are indices
+## encoding whether spin variable varies faster or slower than spatial-orbital variable.
+function _spin_orbital_from_spatial(one_body_integrals, two_body_integrals, r1, r2, index_order=:physicist)
     new_dim = 2 * size(one_body_integrals)[1]
 
     one_body_coefficients = zeros(eltype(one_body_integrals), (new_dim, new_dim))
     @.. one_body_coefficients[r1, r1] = one_body_integrals
     @.. one_body_coefficients[r2, r2] = one_body_integrals
 
-    two_body_coefficients = zeros(eltype(two_body_integrals), ntuple(i->new_dim, 4))
-    @inbounds for inds in ((r1, r2, r2, r1), (r2, r1, r1, r2), (r1, r1, r1, r1), (r2, r2, r2, r2))
-       @.. two_body_coefficients[inds...] = two_body_integrals
+    two_body_coefficients = zeros(eltype(two_body_integrals), (fill(new_dim, 4)...,))
+    if index_order == :physicist
+        @inbounds for inds in ((r1, r2, r2, r1), (r2, r1, r1, r2), (r1, r1, r1, r1), (r2, r2, r2, r2))
+            @.. two_body_coefficients[inds...] = two_body_integrals
+        end
+    elseif index_order == :intermediate
+        @inbounds for inds in ((r1, r2, r1, r2), (r2, r1, r2, r1), (r1, r1, r1, r1), (r2, r2, r2, r2))
+            @.. two_body_coefficients[inds...] = two_body_integrals
+        end
+    elseif index_order == :chemist
+        @inbounds for inds in ((r1, r1, r2, r2), (r2, r2, r1, r1), (r1, r1, r1, r1), (r2, r2, r2, r2))
+            @.. two_body_coefficients[inds...] = two_body_integrals
+        end
     end
     @.. two_body_coefficients = two_body_coefficients / 2
 
@@ -78,7 +90,7 @@ If `transform` is `nothing`, no transformation is done.
 
 The default values of `block_spin` and `transform` agree with the `InteractionOperator` from OpenFermion.
 """
-function InteractionOperator(mol_data::MolecularData; block_spin=false, transform=:tophys)
+function InteractionOperator(mol_data::MolecularData; block_spin=false, transform=:tophys, index_order=:auto)
     tb = mol_data.two_body_integrals
     if transform == :tochem
         tens_tmp = phys_to_chem(tb)
@@ -89,6 +101,12 @@ function InteractionOperator(mol_data::MolecularData; block_spin=false, transfor
     else
         tens_tmp = tb
     end
-    tens1, tens2 = spin_orbital_from_spatial(mol_data.one_body_integrals, tens_tmp, block_spin=block_spin)
+    if index_order == :auto
+        index_order = find_index_order(tens_tmp)
+        if index_order == :unknown
+            throw(ArgumentError("Unknown symmetry of molecular orbital tensor"))
+        end
+    end
+    tens1, tens2 = spin_orbital_from_spatial(mol_data.one_body_integrals, tens_tmp, block_spin=block_spin, index_order=index_order)
     return InteractionOperator(mol_data.nuclear_repulsion, tens1, tens2)
 end

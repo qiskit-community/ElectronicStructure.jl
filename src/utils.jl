@@ -18,6 +18,16 @@ function non_zero_elements_python(t)
     ((reverse(ind .- 1), t[reverse(ind)...]) for ind in Iterators.product(axes(t)...) if !iszero(t[reverse(ind)...]))
 end
 
+function nature_transform(two_body)
+    @tullio two_body_out[l,j,i,k] := two_body[i,j,k,l]
+    return two_body_out
+end
+
+function inv_nature_transform(two_body)
+    @tullio two_body_out[i,j,k,l] := two_body[l,j,i,k]
+    return two_body_out
+end
+
 """
     phys_to_chem(two_body)
 
@@ -58,9 +68,10 @@ Return `true` if the rank-4 tensor `two_body_tensor` has the required symmetries
 two-electron terms.  If `chemist` is `true`, assume the input is in chemists' order,
 otherwise in physicists' order.
 
-If `t` is a correct tensor of indices, with the correct index order, it must pass the
-tests. If `t` is a correct tensor of indicies, but the flag `chemist` is incorrect, it must
-fail the tests. So this test may be used to discriminiate between the orderings.
+If `two_body_tensor` is a correct tensor of indices, with the correct index order, it must pass the
+tests. If `two_body_tensor` is a correct tensor of indicies, but the flag `chemist` is incorrect, it will
+fail the tests, unless the tensor has accidental symmetries.
+This test may be used with care to discriminiate between the orderings.
 
 References: HJO Molecular Electronic-Structure Theory (1.4.17), (1.4.38)
 
@@ -84,9 +95,9 @@ function check_two_body_symmetries(two_body_tensor_in; chemist=true)
 end
 
 """
-    find_two_body_symmetries(two_body_tensor)
+    find_index_order(two_body_tensor)
 
-Return the index convention of `two_body_tensor`.
+Return the index convention of rank-four `two_body_tensor`.
 
 The index convention is determined by checking symmetries of the tensor.
 If the indexing convention can be determined, then one of `:chemist`,
@@ -95,18 +106,20 @@ may be obtained by applying `chem_to_phys` to the physicists' convention or
 `phys_to_chem` to the chemists' convention. If the tests for each of these
 conventions fail, then `:unknown` is returned.
 
+See also: `chem_to_phys`, `phys_to_chem`, `check_two_body_symmetries`.
+
 # Note
 The first of `:chemist`, `:physicist`, and `:intermediate`, in that order, to pass the tests
 is returned. If `two_body_tensor` has accidental symmetries, it may in fact satisfy more
 than one set of symmetry tests. For example, if all elements have the same value, then the
 symmetries for all three index orders are satisfied.
 """
-function find_two_body_symmetries(two_body_tensor)
+function find_index_order(two_body_tensor)
     if check_two_body_symmetries(two_body_tensor)
         return :chemist
     else
         transformed_tensor = phys_to_chem(two_body_tensor)
-        if check_two_body_symmetries(t)
+        if check_two_body_symmetries(transformed_tensor)
             return :physicist
         end
     end
