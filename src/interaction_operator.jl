@@ -8,7 +8,7 @@ using FastBroadcast: @..
 ## In OpenFermion, they include the factor when constructing InteractionOperator.
 ## See spinorb_from_spatial in molecular_data.py.
 """
-    spin_orbital_from_spatial(one_body_integrals, two_body_integrals; block_spin=false)
+    spin_orbital_from_spatial(one_body_integrals, two_body_integrals; block_spin=false, index_order=:physicist)
 
 Create coefficients for spin-orbitals from coefficients for spatial orbitals only.
 
@@ -16,6 +16,9 @@ If `block_spin` is `true` the spins are in two sectors. Otherwise, the spin vari
 more rapidly than the spatial variable, i.e. the spins are interleaved; orbitals
 corresponding to the same spatial orbital, but with differing spins are adjacent.  Note that
 Qiskit uses the former ordering and OpenFermion uses the latter.
+
+`index_order` must be one of `:physicist`, `:chemist`, or `:intermediate`, and must correspond to the
+actual symmetry of `two_body_integrals` in order that the spin-orbital tensor be constructed correctly.
 """
 function spin_orbital_from_spatial(one_body_integrals, two_body_integrals; block_spin=false, index_order=:physicist)
     spatial_dim = size(one_body_integrals)[1]
@@ -72,7 +75,7 @@ end
 ## NOTE !!!! Conversion of InteractionOperator to FermionOperator is in OF conversions.py
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 """
-    InteractionOperator(mol_data::MolecularData; block_spin=false, transform=:tophys)
+    InteractionOperator(mol_data::MolecularData; block_spin=false, transform=:tophys, index_order=:auto)
 
 Create an InteractionOperator from `mol_data`.
 
@@ -87,6 +90,11 @@ If `transform` is `:tophys`, it is assumed that the integrals in `mol_data` are 
 chemists' order, and they are copied and converted to physicists' order before creating the
 output operator. If `transform` is `:tochem`, they are transformed from physicists' to chemists' order.
 If `transform` is `nothing`, no transformation is done.
+
+If `index_order` is `:auto` then the symmetry of the tensor, after possible transformation, is determined
+before doubling the number of orbitals to account for spin. Knowing the symmetry is necessary to perform
+the doubling. If you know the symmetry of the tensor before doubling, you may also pass for `index_order`
+one of `:chemist`, `:physicist`, or `:intermediate`.
 
 The default values of `block_spin` and `transform` agree with the `InteractionOperator` from OpenFermion.
 """
