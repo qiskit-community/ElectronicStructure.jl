@@ -18,16 +18,6 @@ function non_zero_elements_python(t)
     ((reverse(ind .- 1), t[reverse(ind)...]) for ind in Iterators.product(axes(t)...) if !iszero(t[reverse(ind)...]))
 end
 
-# function nature_transform(two_body)
-#     @tullio two_body_out[l,j,i,k] := two_body[i,j,k,l]
-#     return two_body_out
-# end
-
-# function inv_nature_transform(two_body)
-#     @tullio two_body_out[i,j,k,l] := two_body[l,j,i,k]
-#     return two_body_out
-# end
-
 """
     phys_to_chem(two_body)
 
@@ -105,20 +95,32 @@ function to_phys(two_body_tensor)
     throw(ArgumentError("Unable to permute `two_body_tensor` to physicists' index order"))
 end
 
+## This routine (and many others here) are quite inefficient. But, they are probably
+## more clear as written, and furthermore they are unlikely to be perf bottlenecks.
 function to_intermediate(two_body_tensor)
     index_order = find_index_order(two_body_tensor)
     if index_order == :intermediate
         return two_body_tensor
     end
-    if index_order == :chemist
+    if index_order == :chemist  # doing the "wrong" permutation takes chem to intermediate.
         return phys_to_chem(two_body_tensor)
     end
-    if index_order == :physicist
+    if index_order == :physicist  # doing the "wrong" permutation takes phys to intermediate.
         return chem_to_phys(two_body_tensor)
     end
     throw(ArgumentError("Unable to permute `two_body_tensor` to intermediate' index order"))
 end
 
+"""
+    to_index_order(two_body_tensor, index_order)
+
+Permute the rank-four tensor `two_body_tensor` so that the indices
+are in the order specified by `index_order`, which must be one of
+`:chemist`, `:physicist`, or `:intermediate`.
+
+# Throws:
+- `ArgumentError` if the algorithm is unable to obtain the desired index order.
+"""
 function to_index_order(two_body_tensor, index_order)
     if index_order == :chemist
         return to_chem(two_body_tensor)
