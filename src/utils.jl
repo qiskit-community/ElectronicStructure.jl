@@ -18,15 +18,15 @@ function non_zero_elements_python(t)
     ((reverse(ind .- 1), t[reverse(ind)...]) for ind in Iterators.product(axes(t)...) if !iszero(t[reverse(ind)...]))
 end
 
-function nature_transform(two_body)
-    @tullio two_body_out[l,j,i,k] := two_body[i,j,k,l]
-    return two_body_out
-end
+# function nature_transform(two_body)
+#     @tullio two_body_out[l,j,i,k] := two_body[i,j,k,l]
+#     return two_body_out
+# end
 
-function inv_nature_transform(two_body)
-    @tullio two_body_out[i,j,k,l] := two_body[l,j,i,k]
-    return two_body_out
-end
+# function inv_nature_transform(two_body)
+#     @tullio two_body_out[i,j,k,l] := two_body[l,j,i,k]
+#     return two_body_out
+# end
 
 """
     phys_to_chem(two_body)
@@ -59,6 +59,76 @@ function chem_to_phys(two_body)
     ## above, because of symmetry.
     #  @tullio two_body_out[l,j,i,k] := two_body[i,j,k,l]
     return two_body_out
+end
+
+"""
+    to_chem(two_body_tensor)
+
+Permute `two_body_tensor` to chemists' index order, if it is not already
+in this order and return the new tensor.
+"""
+function to_chem(two_body_tensor)
+    if check_two_body_symmetries(two_body_tensor)
+        return two_body_tensor
+    end
+    transformed_tensor = phys_to_chem(two_body_tensor)
+    if check_two_body_symmetries(transformed_tensor)
+        return transformed_tensor
+    end
+    transformed_tensor = phys_to_chem(transformed_tensor)
+    if check_two_body_symmetries(transformed_tensor)
+        return transformed_tensor
+    end
+    throw(ArgumentError("Unable to permute `two_body_tensor` to chemists' index order"))
+end
+
+"""
+    to_phys(two_body_tensor)
+
+Permute `two_body_tensor` to physicists' index order, if it is not already
+in this order and return the new tensor.
+
+# Throws
+- `ArgumentError`: If the algorithm fails to permute `two_body_tensor` to physicists' order.
+"""
+function to_phys(two_body_tensor)
+    index_order = find_index_order(two_body_tensor)
+    if index_order == :physicist
+        return two_body_tensor
+    end
+    if index_order == :chemist
+        return chem_to_phys(two_body_tensor)
+    end
+    if index_order == :intermediate
+        return phys_to_chem(two_body_tensor)
+    end
+    throw(ArgumentError("Unable to permute `two_body_tensor` to physicists' index order"))
+end
+
+function to_intermediate(two_body_tensor)
+    index_order = find_index_order(two_body_tensor)
+    if index_order == :intermediate
+        return two_body_tensor
+    end
+    if index_order == :chemist
+        return phys_to_chem(two_body_tensor)
+    end
+    if index_order == :physicist
+        return chem_to_phys(two_body_tensor)
+    end
+    throw(ArgumentError("Unable to permute `two_body_tensor` to intermediate' index order"))
+end
+
+function to_index_order(two_body_tensor, index_order)
+    if index_order == :chemist
+        return to_chem(two_body_tensor)
+    elseif index_order == :physicist
+        return to_phys(two_body_tensor)
+    elseif index_order == :intermediate
+        return to_intermediate(two_body_tensor)
+    else
+        throw(ArgumentError("`index_order` must be one of `:chemist`, `:physicist`, or `:intermediate`"))
+    end
 end
 
 """
@@ -144,31 +214,3 @@ const _chem_tests = [
         ((t1, t) ->  @tullio t1[p, q, r, s] = t[s, r, p, q]),  # 2 and 4
         ((t1, t) ->  @tullio t1[p, q, r, s] = t[s, r, q, p]),  # 3 and 4
     ]
-
-## !!!!!!!!! WRONG probably, apparently.
-## Tests for two-electron coefficient symmetries in physicists' order
-## These symmetries are taken from a comment in OpenFermion
-## pqrs = rqps = psrq = srqp = qpsr = rspq = spqr = qrsp
-const _phys_tests = [
-        ((t1, t) ->  @tullio t1[p, q, r, s] = t[r, q, p, s]),
-        ((t1, t) ->  @tullio t1[p, q, r, s] = t[p, s, r, q]),
-        ((t1, t) ->  @tullio t1[p, q, r, s] = t[s, r, q, p]),
-        ((t1, t) ->  @tullio t1[p, q, r, s] = t[q, p, s, r]),
-        ((t1, t) ->  @tullio t1[p, q, r, s] = t[r, s, p, q]),
-        ((t1, t) ->  @tullio t1[p, q, r, s] = t[s, p, q, r]),
-        ((t1, t) ->  @tullio t1[p, q, r, s] = t[q, r, s, p])
-    ]
-
-## Checking broken physicist symmetry functions
-function try_symmetries(two_body; chemist=true)
-    t1 = similar(two_body)
-    if chemist
-        tests = _chem_tests
-    else
-        tests = _phys_tests
-    end
-    for tst in tests
-        tst(t1, two_body)
-        println(t1 ≈ two_body)
-    end
-end

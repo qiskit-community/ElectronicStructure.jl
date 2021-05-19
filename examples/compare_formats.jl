@@ -114,10 +114,10 @@ function compare_calculations()
     tst = check_two_body_symmetries(molham_openfermion.two_body_tensor; chemist=false)
     tstpr(tst, "openfermion mol. ham. two-body tensor has physicists' symmetry.")
 
-    iop = InteractionOperator(mol_pyscf; block_spin=false, transform=:tophys)
+    iop = InteractionOperator(mol_pyscf; block_spin=false)
     tst = (molham_openfermion.two_body_tensor ≈ iop.two_body_tensor)
     tstpr(tst, "InteractionOperator from molecular data in OpenFermion and ElectronicStructure agree.")
 
     tst = check_two_body_symmetries(mol_nature.two_body_integrals; chemist=false)
-    tstpr(tst, "qiskit_nature spin orb two_body_tensor has PHYSICISTs symmetry.")
+    tstpr(tst, "qiskit_nature spin orb two_body_tensor has physicists' symmetry.")
 end

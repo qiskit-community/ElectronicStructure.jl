@@ -18,7 +18,8 @@ using Tullio: @tullio
 export Atom, Geometry, MolecularSpec, InteractionOperator, InteractionOperator!
 export non_zero_elements, non_zero_elements_python, phys_to_chem, chem_to_phys,
     check_two_body_symmetries, find_index_order,
-    nature_transform, inv_nature_transform
+    to_chem, to_phys
+
 export to_openfermion
 
 function __init__()
