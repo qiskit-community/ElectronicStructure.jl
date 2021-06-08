@@ -15,12 +15,15 @@ import Requires
 import ZChop
 using Tullio: @tullio
 
+import PkgVersion
+import Dates
+
 export Atom, Geometry, MolecularSpec, InteractionOperator, InteractionOperator!
 export non_zero_elements, non_zero_elements_python, phys_to_chem, chem_to_phys,
     check_two_body_symmetries, find_index_order,
-    to_chem, to_phys
+    to_index_order
 
-export to_openfermion
+export to_openfermion, to_pyscf
 
 function __init__()
     Requires.@require PyCall="438e738f-606a-5dbb-bf0a-cddfbfd45ab0" begin

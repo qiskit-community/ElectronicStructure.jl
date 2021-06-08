@@ -75,17 +75,18 @@ end
 ## NOTE !!!! Conversion of InteractionOperator to FermionOperator is in OF conversions.py
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 """
-    InteractionOperator(mol_data::MolecularData; block_spin=false, index_order=:default)
+    InteractionOperator(mol_data::MolecularData; spin_order=:block, index_order=:default)
 
 Create an InteractionOperator from `mol_data`.
 
 `mol_data` contains integrals for spatial orbitals. `InteractionOrbitals` creates coefficients for
 spin orbitals, doubling the number of orbitals.
 
-If `block_spin` is `true` the two-body tensor is constructed with spins in two
-sectors. Otherwise, the spin variable varies more rapidly than the spatial variable,
+If `spin_order` is `:block` the two-body tensor is constructed with spins in two
+sectors. If `spin_order` is `:alternating`, the spin variable varies more rapidly than the spatial variable,
 i.e. adjacent orbitals have differing spins. Note that Qiskit uses the former ordering and
-OpenFermion uses the latter.
+OpenFermion uses the latter. If `spin_order` is `:none`, then the operator includes only the input
+spatial oribtals; no spin orbitals are computed.
 
 If `index_order` is `:default` then it is assumed that the two-body tensor in `mol_data` is
 in chemists' index order and that the desired order for the spin-orbital tensor is
@@ -95,13 +96,21 @@ corresponding index order.
 
 The default values of `block_spin` and `index_order` agree with the `InteractionOperator` from OpenFermion.
 """
-function InteractionOperator(mol_data::MolecularData; block_spin=false, index_order=:default)
+function InteractionOperator(mol_data::MolecularData; spin_order=:block, index_order=:default)
     tb = mol_data.two_body_integrals
     if index_order == :default
         tens_tmp = chem_to_phys(tb)
         index_order = :physicist
     else
         tens_tmp = to_index_order(tb, index_order)
+    end
+    if spin_order == :none
+        return InteractionOperator(mol_data.nuclear_repulsion, mol_data.one_body_integrals, mol_data.two_body_integrals)
+    end
+    if spin_order == :block
+        block_spin = true
+    else
+        block_spin = false
     end
     tens1, tens2 = spin_orbital_from_spatial(mol_data.one_body_integrals, tens_tmp, block_spin=block_spin, index_order=index_order)
     return InteractionOperator(mol_data.nuclear_repulsion, tens1, tens2)

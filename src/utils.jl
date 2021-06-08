@@ -40,6 +40,7 @@ index order to physicist index order: i,j,k,l -> i,k,l,j
 See `phys_to_chem`, `check_two_body_symmetries`.
 
 # Note
+Either `chem_to_phys` or `phys_to_chem` generates the cyclic group of order three.
 Denote `chem_to_phys` by `g` and `phys_to_chem` by `h`. The elements `g`, `h`, `I` form
 a group with `gh = hg = I`, `g^2=h`, and `h^2=g`.
 """
@@ -56,6 +57,8 @@ end
 
 Permute `two_body_tensor` to chemists' index order, if it is not already
 in this order and return the new tensor.
+
+See `phys_to_chem`, `chem_to_phys`.
 """
 function to_chem(two_body_tensor)
     if check_two_body_symmetries(two_body_tensor)
@@ -117,6 +120,14 @@ end
 Permute the rank-four tensor `two_body_tensor` so that the indices
 are in the order specified by `index_order`, which must be one of
 `:chemist`, `:physicist`, or `:intermediate`.
+
+`two_body_tensor` must be in one of the three index orders in order that
+the permutation algorithm be successful. This function is relatively inefficient.
+It first performs sequences of symmetry tests to detemine the index order of the
+input tensor. It then performs the correct sequence of permutations to bring the
+tensor to the desired input order. If performance is important, and you know the
+index order of the input tensor, it is better to apply just the single required
+permutation.
 
 # Throws:
 - `ArgumentError` if the algorithm is unable to obtain the desired index order.
@@ -216,3 +227,11 @@ const _chem_tests = [
         ((t1, t) ->  @tullio t1[p, q, r, s] = t[s, r, p, q]),  # 2 and 4
         ((t1, t) ->  @tullio t1[p, q, r, s] = t[s, r, q, p]),  # 3 and 4
     ]
+
+
+function data_header_dict()
+    d = Dict()
+    d["version"] = PkgVersion.Version(ElectronicStructure)
+    d["date"] = Dates.now()
+    return d
+end

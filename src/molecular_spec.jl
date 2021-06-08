@@ -38,6 +38,9 @@ struct Geometry{CoordT}
     atoms::Vector{Atom{CoordT}}
 end
 
+Base.copy(g::Geometry) = Geometry(copy(g.atoms))
+Base.:(==)(g1::Geometry, g2::Geometry) = g1.atoms == g2.atoms
+
 """
     Geometry()
 
@@ -101,6 +104,15 @@ Base.@kwdef struct MolecularSpec{CoordT}
     multiplicity::Int = 1
     charge::Int = 0
     basis::String = "sto-3g"
+end
+
+Base.copy(spec::MolecularSpec) = MolecularSpec(copy(spec.geometry), spec.multiplicity, spec.charge, spec.basis)
+
+function Base.:(==)(spec1::MolecularSpec, spec2::MolecularSpec)
+    return spec1.geometry == spec2.geometry &&
+        spec1.multiplicity == spec2.multiplicity &&
+        spec1.charge == spec2.charge &&
+        spec1.basis == spec2.basis
 end
 
 function Base.getproperty(mol::MolecularSpec, sym::Symbol)

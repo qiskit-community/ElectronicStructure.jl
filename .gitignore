@@ -4,3 +4,7 @@
 /Manifest.toml
 tmp*
 src/old/
+repl_history.jl
+hide/
+bin/
+.envrc

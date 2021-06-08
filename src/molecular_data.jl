@@ -10,3 +10,17 @@ struct MolecularData{T}
     one_body_integrals::Array{T, 2}
     two_body_integrals::Array{T, 4}
 end
+
+## Remember `deepcopy` uses a good fallback. This is only shallow
+function Base.copy(md::MolecularData)
+    return MolecularData(md.spec, md.nuclear_repulsion,
+                  md.one_body_integrals,
+                  md.two_body_integrals)
+end
+
+function Base.:(==)(md1::MolecularData, md2::MolecularData)
+    return md1.spec == md2.spec &&
+        md1.nuclear_repulsion == md2.nuclear_repulsion &&
+        md1.one_body_integrals == md2.one_body_integrals &&
+        md1.two_body_integrals == md2.two_body_integrals
+end

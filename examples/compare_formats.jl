@@ -5,7 +5,9 @@ using PyCall
 using ElectronicStructure: one_electron_integrals,
    MolecularData, PySCF
 
-@pyimport qiskit_nature.drivers as drivers
+# Some strange bug prevents just importing qiskit_nature, and using FQN
+@pyimport qiskit_nature.drivers as qiskit_nature_drivers
+
 @pyimport openfermion
 @pyimport openfermionpyscf
 
@@ -13,7 +15,7 @@ using ElectronicStructure: one_electron_integrals,
 
 using PyCall
 
-geoms = (
+const geoms = (
     Geometry(Atom(:H, (0., 0., 0.)), Atom(:H, (0., 0., 0.7414))),
 
     Geometry(Atom(:Li, (0., 0., 0.)), Atom(:H, (0., 0., 1.4))),
@@ -22,11 +24,13 @@ geoms = (
              Atom(:H, (-0.757, 0.586, 0.)))
 )
 
+const geom_names = ("H2", "LiH", "H2O")
+
 ## Choose one of the geometries
-geom = geoms[1]
-#basis = "sto-3g"
+geom = geoms[3]
 basis = "sto-3g"
 #basis = "631g"
+const bases = ("sto-3g", "631g")
 
 """
     get_pyscf_molecule(geom, basis)
@@ -36,12 +40,33 @@ as possible. That is, this is a direct interface to pyscf.
 """
 function get_pyscf_molecule(geom, basis)
     ## Construct specification of electronic structure problem
-    mol_spec = MolecularSpec(geometry=geom)
+    mol_spec = MolecularSpec(geometry=geom, basis=basis)
 
     ## Do calculations and populate MolecularData with results
     mol_pyscf = MolecularData(PySCF, mol_spec)
 
     return mol_pyscf
+end
+
+"""
+    generate_pyscf_molecules(geoms, geom_names, bases)
+
+Compute integrals for all combinations of molecular geometries in `geoms`
+and orbital bases in `bases`. Return the results in a dict with two
+entries, "header", which contains date and version info, and "data" which
+contains a `Dict` whose keys are strings identifying the geometry and basis
+and who's values are the results as `MolecularData` objects.
+"""
+function generate_pyscf_molecules(geoms, geom_names, bases)
+    molecules = Dict()
+    for (geom, geom_name) in zip(geoms, geom_names)
+        for basis in bases
+            molname = string(geom_name, "_", basis)
+            mol_pyscf = get_pyscf_molecule(geom, basis)
+            molecules[molname] = mol_pyscf
+        end
+    end
+    return molecules
 end
 
 function get_openfermion_molecule(geom, basis)
@@ -52,8 +77,8 @@ function get_openfermion_molecule(geom, basis)
 end
 
 function get_qiskit_nature_molecule(geom, basis)
-    driver = drivers.PySCFDriver(atom=to_pyscf(geom),
-                                 unit=drivers.UnitsType.ANGSTROM,
+    driver = qiskit_nature_drivers.PySCFDriver(atom=to_pyscf(geom),
+                                 unit=qiskit_nature_drivers.UnitsType.ANGSTROM,
                                  charge=0,
                                  spin=0,
                                  basis=basis)
@@ -114,7 +139,7 @@ function compare_calculations()
     tst = check_two_body_symmetries(molham_openfermion.two_body_tensor; chemist=false)
     tstpr(tst, "openfermion mol. ham. two-body tensor has physicists' symmetry.")
 
-    iop = InteractionOperator(mol_pyscf; block_spin=false)
+    iop = InteractionOperator(mol_pyscf; spin_order=:alternating)
     tst = (molham_openfermion.two_body_tensor ≈ iop.two_body_tensor)
     tstpr(tst, "InteractionOperator from molecular data in OpenFermion and ElectronicStructure agree.")
 
