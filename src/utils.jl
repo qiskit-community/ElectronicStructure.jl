@@ -158,7 +158,7 @@ This test may be used with care to discriminiate between the orderings.
 
 References: HJO Molecular Electronic-Structure Theory (1.4.17), (1.4.38)
 
-See `phys_to_chem`, `chem_to_phys`.
+See `phys_to_chem`, `chem_to_phys`, `find_index_order`.
 """
 function check_two_body_symmetries(two_body_tensor_in; chemist=true)
     two_body_tensor = ZChop.zchop(two_body_tensor_in)

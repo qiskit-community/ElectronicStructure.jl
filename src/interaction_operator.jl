@@ -105,7 +105,7 @@ function InteractionOperator(mol_data::MolecularData; spin_order=:block, index_o
         tens_tmp = to_index_order(tb, index_order)
     end
     if spin_order == :none
-        return InteractionOperator(mol_data.nuclear_repulsion, mol_data.one_body_integrals, mol_data.two_body_integrals)
+        return InteractionOperator(mol_data.nuclear_repulsion, mol_data.one_body_integrals, tens_tmp)
     end
     if spin_order == :block
         block_spin = true
