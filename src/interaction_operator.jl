@@ -58,7 +58,9 @@ function _spin_orbital_from_spatial(one_body_integrals, two_body_integrals, r1, 
     end
     @.. two_body_coefficients = two_body_coefficients / 2
 
-    return ZChop.zchop!.((one_body_coefficients, two_body_coefficients))
+    # Should we do zchop ?
+    # return ZChop.zchop!.((one_body_coefficients, two_body_coefficients))
+    return (one_body_coefficients, two_body_coefficients)
 end
 
 """
@@ -114,4 +116,16 @@ function InteractionOperator(mol_data::MolecularData; spin_order=:block, index_o
     end
     tens1, tens2 = spin_orbital_from_spatial(mol_data.one_body_integrals, tens_tmp, block_spin=block_spin, index_order=index_order)
     return InteractionOperator(mol_data.nuclear_repulsion, tens1, tens2)
+end
+
+function ZChop.zchop!(iop::InteractionOperator)
+    ZChop.zchop!(iop.one_body_tensor)
+    ZChop.zchop!(iop.two_body_tensor)
+    return iop
+end
+
+function ZChop.zchop(iop::InteractionOperator)
+    return InteractionOperator(ZChop.zchop(iop.nuclear_repulsion),
+                               ZChop.zchop(iop.one_body_tensor),
+                               ZChop.zchop(iop.two_body_tensor))
 end
