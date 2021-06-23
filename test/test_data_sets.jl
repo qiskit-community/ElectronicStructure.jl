@@ -30,6 +30,7 @@ end
         @test find_index_order(mol1.two_body_integrals) == :chemist
         iop = InteractionOperator(mol1)
         @test find_index_order(iop.two_body_tensor) == :physicist
+        @test find_index_order(iop) == :physicist
         iop2 = InteractionOperator(mol1; index_order=:chemist)
         @test find_index_order(iop2.two_body_tensor) == :chemist
         iop2 = InteractionOperator(mol1; index_order=:intermediate)

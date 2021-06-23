@@ -129,3 +129,10 @@ function ZChop.zchop(iop::InteractionOperator)
                                ZChop.zchop(iop.one_body_tensor),
                                ZChop.zchop(iop.two_body_tensor))
 end
+
+"""
+    find_index_order(iop::InteractionOperator)
+
+Return the index-ordering convention of the two-body tensor in `iop`.
+"""
+find_index_order(iop::InteractionOperator) = find_index_order(iop.two_body_tensor)
