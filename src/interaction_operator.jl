@@ -118,16 +118,26 @@ function InteractionOperator(mol_data::MolecularData; spin_order=:block, index_o
     return InteractionOperator(mol_data.nuclear_repulsion, tens1, tens2)
 end
 
-function ZChop.zchop!(iop::InteractionOperator)
-    ZChop.zchop!(iop.one_body_tensor)
-    ZChop.zchop!(iop.two_body_tensor)
+"""
+    zchop!(iop::InteractionOperator, zeps=ZChop.zeps)
+
+Remove terms in `iop` that are close to zero.
+"""
+function ZChop.zchop!(iop::InteractionOperator, zeps=ZChop.zeps)
+    ZChop.zchop!(iop.one_body_tensor, zeps)
+    ZChop.zchop!(iop.two_body_tensor, zeps)
     return iop
 end
 
-function ZChop.zchop(iop::InteractionOperator)
-    return InteractionOperator(ZChop.zchop(iop.nuclear_repulsion),
-                               ZChop.zchop(iop.one_body_tensor),
-                               ZChop.zchop(iop.two_body_tensor))
+"""
+    zchop(iop::InteractionOperator, zeps=ZChop.zeps)
+
+See `zchop!(iop::InteractionOperator)`
+"""
+function ZChop.zchop(iop::InteractionOperator, zeps=ZChop.zeps)
+    return InteractionOperator(ZChop.zchop(iop.nuclear_repulsion, zeps),
+                               ZChop.zchop(iop.one_body_tensor, zeps),
+                               ZChop.zchop(iop.two_body_tensor, zeps))
 end
 
 """
