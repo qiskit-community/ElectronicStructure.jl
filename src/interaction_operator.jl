@@ -133,7 +133,7 @@ end
 
 Remove terms in `iop` that are close to zero.
 """
-function ZChop.zchop!(iop::InteractionOperator, zeps=ZChop.zeps)
+function ZChop.zchop!(iop::InteractionOperator, zeps::Real=ZChop.zeps)
     ZChop.zchop!(iop.one_body_tensor, zeps)
     ZChop.zchop!(iop.two_body_tensor, zeps)
     return iop
@@ -144,7 +144,7 @@ end
 
 See `zchop!(iop::InteractionOperator)`
 """
-function ZChop.zchop(iop::InteractionOperator, zeps=ZChop.zeps)
+function ZChop.zchop(iop::InteractionOperator, zeps::Real=ZChop.zeps)
     return InteractionOperator(ZChop.zchop(iop.nuclear_repulsion, zeps),
                                ZChop.zchop(iop.one_body_tensor, zeps),
                                ZChop.zchop(iop.two_body_tensor, zeps))
