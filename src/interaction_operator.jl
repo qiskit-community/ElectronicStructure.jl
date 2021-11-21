@@ -74,6 +74,16 @@ struct InteractionOperator
     two_body_tensor::Array{Float64, 4}
 end
 
+Base.:(==)(iop1::InteractionOperator, iop2::InteractionOperator) =
+    iop1.nuclear_repulsion == iop2.nuclear_repulsion &&
+    iop1.one_body_tensor == iop2.one_body_tensor &&
+    iop1.two_body_tensor == iop2.two_body_tensor
+
+Base.isapprox(iop1::InteractionOperator, iop2::InteractionOperator) =
+    isapprox(iop1.nuclear_repulsion, iop2.nuclear_repulsion) &&
+    isapprox(iop1.one_body_tensor, iop2.one_body_tensor) &&
+    isapprox(iop1.two_body_tensor, iop2.two_body_tensor)
+
 ## NOTE !!!! Conversion of InteractionOperator to FermionOperator is in OF conversions.py
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 """
