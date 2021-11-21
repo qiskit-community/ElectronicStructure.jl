@@ -139,6 +139,12 @@ function ZChop.zchop!(iop::InteractionOperator, zeps::Real=ZChop.zeps)
     return iop
 end
 
+function ZChop.nchop(iop::InteractionOperator)
+    return InteractionOperator(ZChop.nchop(iop.nuclear_repulsion),
+                               ZChop.nchop(iop.one_body_tensor),
+                               ZChop.nchop(iop.two_body_tensor))
+end
+
 """
     zchop(iop::InteractionOperator, zeps=ZChop.zeps)
 
