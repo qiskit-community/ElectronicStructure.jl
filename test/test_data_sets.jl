@@ -1,4 +1,5 @@
 using Artifacts
+using LazyArtifacts
 import JLD2
 using ElectronicStructure: MolecularData
 
