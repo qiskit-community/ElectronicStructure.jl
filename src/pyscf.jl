@@ -1,3 +1,4 @@
+import PyCall
 using PyCall: PyObject
 
 export PyMol, PySCF
