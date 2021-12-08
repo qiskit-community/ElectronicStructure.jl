@@ -1,12 +1,9 @@
 """
     module ElectronicStructure
 
-Provides an interface to electronic structure calculation packages. The only
-package supported is `pyscf`.
+Provides an interface to electronic structure calculation packages.
 
-Note that doc strings for Python objects are available at the Julia REPL. For example
-
-    help?> ElectronicStructure.pyscf.gto.Mole
+PySCF is supported by the package ElectronicStructurePySCF
 """
 module ElectronicStructure
 
@@ -26,11 +23,11 @@ export non_zero_elements, non_zero_elements_python, phys_to_chem, chem_to_phys,
 
 export to_openfermion, to_pyscf
 
-function __init__()
-    Requires.@require PyCall="438e738f-606a-5dbb-bf0a-cddfbfd45ab0" begin
-        include("pyscf.jl")
-    end
-end
+# function __init__()
+#     Requires.@require PyCall="438e738f-606a-5dbb-bf0a-cddfbfd45ab0" begin
+#         include("pyscf.jl")
+#     end
+# end
 
 include("utils.jl")
 include("molecular_spec.jl")
