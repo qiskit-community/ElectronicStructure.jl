@@ -21,13 +21,7 @@ export non_zero_elements, non_zero_elements_python, phys_to_chem, chem_to_phys,
     check_two_body_symmetries, find_index_order,
     to_index_order
 
-export to_openfermion, to_pyscf
-
-# function __init__()
-#     Requires.@require PyCall="438e738f-606a-5dbb-bf0a-cddfbfd45ab0" begin
-#         include("pyscf.jl")
-#     end
-# end
+export to_openfermion
 
 include("utils.jl")
 include("molecular_spec.jl")

@@ -1,7 +1,7 @@
 name = "ElectronicStructure"
 uuid = "f7ec468b-4310-4c77-90aa-f73697106762"
 authors = ["John Lapeyre <jlapeyre@users.noreply.github.com> and contributors"]
-version = "0.1.4"
+version = "0.1.5"
 
 [deps]
 Artifacts = "56f22d72-fd6d-98f1-02f0-08ddc0907c33"
