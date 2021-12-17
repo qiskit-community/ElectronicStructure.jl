@@ -229,9 +229,11 @@ const _chem_tests = [
     ]
 
 
-function data_header_dict()
-    d = Dict()
-    d["version"] = PkgVersion.Version(ElectronicStructure)
-    d["date"] = Dates.now()
-    return d
-end
+# import PkgVersion
+# import Dates
+# function data_header_dict()
+#     d = Dict{String, Any}()
+#     d["version"] = PkgVersion.Version(ElectronicStructure)
+#     d["date"] = Dates.now()
+#     return d
+# end

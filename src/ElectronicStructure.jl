@@ -9,12 +9,8 @@ module ElectronicStructure
 
 
 import PeriodicTable
-import Requires
 import ZChop
 using Tullio: @tullio
-
-import PkgVersion
-import Dates
 
 export Atom, Geometry, MolecularSpec, InteractionOperator, InteractionOperator!
 export non_zero_elements, non_zero_elements_python, phys_to_chem, chem_to_phys,
