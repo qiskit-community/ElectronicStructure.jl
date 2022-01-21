@@ -25,13 +25,13 @@ function Base.:(==)(md1::MolecularData, md2::MolecularData)
         md1.two_body_integrals == md2.two_body_integrals
 end
 
-function ZChop.zchop!(md::MolecularData, zeps::Real=ZChop.zeps)
+function ZChop.zchop!(md::MolecularData, zeps::Real=ZChop.ZEPS)
     ZChop.zchop!(md.one_body_integrals, zeps)
     ZChop.zchop!(md.two_body_integrals, zeps)
     return md
 end
 
-function ZChop.zchop(md::MolecularData, zeps::Real=ZChop.zeps)
+function ZChop.zchop(md::MolecularData, zeps::Real=ZChop.ZEPS)
     return MolecularData(md.spec,
                          ZChop.zchop(md.nuclear_repulsion, zeps),
                          ZChop.zchop(md.one_body_integrals, zeps),
