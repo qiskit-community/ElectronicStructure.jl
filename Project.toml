@@ -1,7 +1,7 @@
 name = "ElectronicStructure"
 uuid = "f7ec468b-4310-4c77-90aa-f73697106762"
 authors = ["John Lapeyre <jlapeyre@users.noreply.github.com> and contributors"]
-version = "0.1.7"
+version = "0.1.8"
 
 [deps]
 FastBroadcast = "7034ab61-46d4-4ed7-9d0f-46aef9175898"

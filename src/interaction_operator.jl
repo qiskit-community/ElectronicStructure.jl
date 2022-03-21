@@ -109,7 +109,13 @@ corresponding index order.
 The default values of `block_spin` and `index_order` agree with the `InteractionOperator` from OpenFermion.
 """
 function InteractionOperator(mol_data::MolecularData; spin_order=:block, index_order=:default)
-    tb = mol_data.two_body_integrals
+    interaction_operator(mol_data.nuclear_repulsion, mol_data.one_body_integrals, mol_data.two_body_integrals;
+                         spin_order=spin_order, index_order=index_order)
+end
+
+function interaction_operator(nuclear_repulsion, one_body_integrals, two_body_integrals;
+                              spin_order=:block, index_order=:default)
+    tb = two_body_integrals
     if index_order == :default
         tens_tmp = chem_to_phys(tb)
         index_order = :physicist
@@ -117,15 +123,15 @@ function InteractionOperator(mol_data::MolecularData; spin_order=:block, index_o
         tens_tmp = to_index_order(tb, index_order)
     end
     if spin_order == :none
-        return InteractionOperator(mol_data.nuclear_repulsion, mol_data.one_body_integrals, tens_tmp)
+        return InteractionOperator(nuclear_repulsion, one_body_integrals, tens_tmp)
     end
     if spin_order == :block
         block_spin = true
     else
         block_spin = false
     end
-    tens1, tens2 = spin_orbital_from_spatial(mol_data.one_body_integrals, tens_tmp, block_spin=block_spin, index_order=index_order)
-    return InteractionOperator(mol_data.nuclear_repulsion, tens1, tens2)
+    tens1, tens2 = spin_orbital_from_spatial(one_body_integrals, tens_tmp, block_spin=block_spin, index_order=index_order)
+    return InteractionOperator(nuclear_repulsion, tens1, tens2)
 end
 
 """
