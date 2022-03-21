@@ -1,4 +1,5 @@
-using FastBroadcast: @..
+# Disable this because of broken dependencies
+# using FastBroadcast: @..
 
 ####
 #### Transformations to our representations
@@ -40,8 +41,8 @@ function _spin_orbital_from_spatial(one_body_integrals, two_body_integrals, r1, 
     new_dim = 2 * size(one_body_integrals)[1]
 
     one_body_coefficients = zeros(eltype(one_body_integrals), (new_dim, new_dim))
-    @.. one_body_coefficients[r1, r1] = one_body_integrals
-    @.. one_body_coefficients[r2, r2] = one_body_integrals
+    @. one_body_coefficients[r1, r1] = one_body_integrals
+    @. one_body_coefficients[r2, r2] = one_body_integrals
 
     two_body_coefficients = zeros(eltype(two_body_integrals), (fill(new_dim, 4)...,))
     if index_order == :physicist
@@ -54,9 +55,9 @@ function _spin_orbital_from_spatial(one_body_integrals, two_body_integrals, r1, 
         throw(ArgumentError("Unknown index order: $index_order"))
     end
     @inbounds for inds in index_set
-        @.. two_body_coefficients[inds...] = two_body_integrals
+        @. two_body_coefficients[inds...] = two_body_integrals
     end
-    @.. two_body_coefficients = two_body_coefficients / 2
+    @. two_body_coefficients = two_body_coefficients / 2
 
     # Should we do zchop ?
     # return ZChop.zchop!.((one_body_coefficients, two_body_coefficients))
